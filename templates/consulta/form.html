@@ -1,0 +1,62 @@
+<div class="bg-white rounded-lg shadow-md p-6">
+    <section id="consulta-form" class="form-section active">
+        <h2 class="text-2xl font-semibold mb-6 text-blue-800 flex items-center">
+            <i class="fas fa-calendar-check mr-3"></i> Agendamento de Consulta
+        </h2>
+        <form method="POST" action="{% url 'consulta_create' %}" id="consultaForm" class="space-y-4">
+            {% csrf_token %}
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <label for="medico_select" class="block text-sm font-medium text-gray-700">Médico*</label>
+                    <select id="medico_select" name="medico_select" required
+                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 p-2 border">
+                        <option value="" disabled selected>Selecione um médico</option>
+                        {% for medico in medicos %}
+                        <option value="{{ medico.id }}">{{ medico.nome }} - {{ medico.especialidade }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div>
+                    <label for="consulta_paciente_select" class="block text-sm font-medium text-gray-700">Paciente*</label>
+                    <select id="consulta_paciente_select" name="consulta_paciente_select" required
+                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 p-2 border">
+                        <option value="" disabled selected>Selecione um paciente</option>
+                        {% for paciente in pacientes %}
+                        <option value="{{ paciente.id }}">{{ paciente.nome }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div>
+                    <label for="data_hora_consulta" class="block text-sm font-medium text-gray-700">Data e Hora*</label>
+                    <input type="datetime-local" id="data_hora_consulta" name="data_hora_consulta" required
+                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 p-2 border">
+                    <p class="error-message hidden" id="data_hora_consulta-error"></p>
+                </div>
+            </div>
+
+            <div>
+                <label for="motivo" class="block text-sm font-medium text-gray-700">Motivo da Consulta*</label>
+                <textarea id="motivo" name="motivo" rows="3" required
+                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 p-2 border"></textarea>
+                <p class="error-message hidden" id="motivo-error"></p>
+            </div>
+
+            <div>
+                <label for="observacoes" class="block text-sm font-medium text-gray-700">Observações</label>
+                <textarea id="observacoes" name="observacoes" rows="3"
+                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 p-2 border"></textarea>
+            </div>
+
+            <div class="flex justify-end space-x-4 pt-6">
+                <button type="reset" class="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                    Limpar
+                </button>
+                <button type="submit" class="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                    <i class="fas fa-save mr-2"></i>Salvar
+                </button>
+            </div>
+        </form>
+    </section>
+</div>

@@ -1,0 +1,22 @@
+{
+  "name": "vittamed",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "tailwind:watch": "tailwindcss/cli -i clinica/static/styles/input.css -o clinica/static/styles/output.css --watch"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "devDependencies": {
+    "tailwindcss": "^4.1.7"
+  },
+  "dependencies": {
+    "@tailwindcss/cli": "^4.1.7",
+    "@tailwindcss/vite": "^4.1.7",
+    "autoprefixer": "^10.4.21",
+    "flowbite": "^3.1.2",
+    "postcss": "^8.5.3"
+  }
+}

@@ -1,0 +1,398 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema Médico - Cadastro</title>
+    <link href="{% static 'styles/output.css' %}" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+        <style>
+        .form-section {
+            transition: all 0.3s ease;
+        }
+        .form-section.hidden {
+            display: none;
+        }
+        .form-section.active {
+            display: block;
+            animation: fadeIn 0.5s;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        textarea {
+            resize: none;
+        }
+        .input-error {
+            border-color: #f87171;
+        }
+        .error-message {
+            color: #f87171;
+            font-size: 0.875rem;
+            margin-top: 0.25rem;
+        }
+    </style>  
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <div class="container mx-auto px-4 py-8">
+        <!-- Header -->
+        <header class="mb-8">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h1 class="text-3xl font-bold text-blue-800">MedSys</h1>
+                    <p class="text-gray-600">Sistema de Gestão Médica</p>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <button id="theme-toggle" class="p-2 rounded-full bg-gray-200 text-gray-700">
+                        <i class="fas fa-moon"></i>
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Navigation Tabs -->
+        <div class="mb-8">
+            <div class="flex flex-wrap border-b border-gray-200">
+                <a href="{% url 'paciente_create' %}" class="px-4 py-2 font-medium text-gray-500 hover:text-blue-600">
+                    <i class="fas fa-user-md mr-2"></i>Paciente
+                </a>
+                <a href="{% url 'medico_create' %}" class="px-4 py-2 font-medium text-gray-500 hover:text-blue-600">
+                    <i class="fas fa-user-md mr-2"></i>Medico
+                </a>
+                <a href="{% url 'registrosaude_create' %}" class="px-4 py-2 font-medium text-gray-500 hover:text-blue-600">
+                    <i class="fas fa-user-md mr-2"></i>Registro de Saude
+                </a>
+                <a href="{% url 'consulta_create' %}" class="px-4 py-2 font-medium text-gray-500 hover:text-blue-600">
+                    <i class="fas fa-user-md mr-2"></i>Consulta
+                </a>
+                <a href="{% url 'prescricao_create' %}" class="px-4 py-2 font-medium text-gray-500 hover:text-blue-600">
+                    <i class="fas fa-user-md mr-2"></i>Prescrição
+                </a>
+            </div>
+        </div>
+
+        <!-- Form Sections -->
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <section id="paciente-form" class="form-section active">
+                {% include 'paciente/form.html' %}
+            </section>
+
+            <section id="medico-form" class="form-section hidden">
+                {% include 'medico/form.html' %}
+            </section>
+
+            <section id="registro-form" class="form-section hidden">
+                {% include 'registrosaude/form.html' %}
+            </section>
+
+            <section id="consulta-form" class="form-section hidden">
+                {% include 'consulta/form.html' %}
+            </section>
+
+            <section id="prescricao-form" class="form-section hidden">
+                {% include 'prescricao/form.html' %}
+            </section>           
+        </div>
+    </div>
+
+    <script>
+        // Theme Toggle
+        const themeToggle = document.getElementById('theme-toggle');
+        themeToggle.addEventListener('click', () => {
+            document.documentElement.classList.toggle('dark');
+            const icon = themeToggle.querySelector('i');
+            if (document.documentElement.classList.contains('dark')) {
+                icon.classList.remove('fa-moon');
+                icon.classList.add('fa-sun');
+                document.body.classList.add('bg-gray-900');
+                document.body.classList.remove('bg-gray-50');
+            } else {
+                icon.classList.remove('fa-sun');
+                icon.classList.add('fa-moon');
+                document.body.classList.remove('bg-gray-900');
+                document.body.classList.add('bg-gray-50');
+            }
+        });
+
+        // Tab Navigation
+        const tabButtons = document.querySelectorAll('.tab-btn');
+        const formSections = document.querySelectorAll('.form-section');
+
+        tabButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                const target = button.getAttribute('data-target');
+                
+                // Update active tab
+                tabButtons.forEach(btn => {
+                    btn.classList.remove('text-blue-600', 'border-blue-600');
+                    btn.classList.add('text-gray-500', 'hover:text-blue-600');
+                });
+                button.classList.remove('text-gray-500', 'hover:text-blue-600');
+                button.classList.add('text-blue-600', 'border-blue-600');
+                
+                // Show corresponding form
+                formSections.forEach(section => {
+                    section.classList.remove('active');
+                    section.classList.add('hidden');
+                });
+                
+                const activeSection = document.getElementById(`${target}-form`);
+                activeSection.classList.remove('hidden');
+                activeSection.classList.add('active');
+            });
+        });
+
+        // Form Validation Functions
+        function validateCPF(cpf) {
+            cpf = cpf.replace(/[^\d]+/g,'');
+            if(cpf.length !== 11 || /^(\d)\1{10}$/.test(cpf)) return false;
+            
+            let sum = 0;
+            for (let i = 0; i < 9; i++) {
+                sum += parseInt(cpf.charAt(i)) * (10 - i);
+            }
+            let remainder = (sum * 10) % 11;
+            if (remainder === 10 || remainder === 11) remainder = 0;
+            if (remainder !== parseInt(cpf.charAt(9))) return false;
+            
+            sum = 0;
+            for (let i = 0; i < 10; i++) {
+                sum += parseInt(cpf.charAt(i)) * (11 - i);
+            }
+            remainder = (sum * 10) % 11;
+            if (remainder === 10 || remainder === 11) remainder = 0;
+            if (remainder !== parseInt(cpf.charAt(10))) return false;
+            
+            return true;
+        }
+
+        function validateEmail(email) {
+            const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            return re.test(email);
+        }
+
+        function validatePhone(phone) {
+            const re = /^(\+\d{1,3}[- ]?)?\d{10,11}$/;
+            return re.test(phone.replace(/[^\d]/g, ''));
+        }
+
+        function validateCRM(crm) {
+            return /^\d{4,6}$/.test(crm);
+        }
+
+        // Format CPF input
+        const cpfInput = document.getElementById('cpf');
+        if (cpfInput) {
+            cpfInput.addEventListener('input', function(e) {
+                let value = e.target.value.replace(/\D/g, '');
+                if (value.length > 11) value = value.substring(0, 11);
+                
+                // Format with dots and hyphen
+                if (value.length > 3 && value.length <= 6) {
+                    value = value.replace(/(\d{3})(\d{1,3})/, '$1.$2');
+                } else if (value.length > 6 && value.length <= 9) {
+                    value = value.replace(/(\d{3})(\d{3})(\d{1,3})/, '$1.$2.$3');
+                } else if (value.length > 9) {
+                    value = value.replace(/(\d{3})(\d{3})(\d{3})(\d{1,2})/, '$1.$2.$3-$4');
+                }
+                
+                e.target.value = value;
+            });
+        }
+
+        // Format phone inputs
+        const phoneInputs = document.querySelectorAll('input[type="text"][name*="telefone"]');
+        phoneInputs.forEach(input => {
+            input.addEventListener('input', function(e) {
+                let value = e.target.value.replace(/\D/g, '');
+                
+                // Format as (00) 00000-0000
+                if (value.length > 2 && value.length <= 6) {
+                    value = value.replace(/(\d{2})(\d{1,4})/, '($1) $2');
+                } else if (value.length > 6 && value.length <= 10) {
+                    value = value.replace(/(\d{2})(\d{4})(\d{1,4})/, '($1) $2-$3');
+                } else if (value.length > 10) {
+                    value = value.replace(/(\d{2})(\d{5})(\d{1,4})/, '($1) $2-$3');
+                } else if (value.length <= 2) {
+                    value = value.replace(/(\d{1,2})/, '($1');
+                }
+                
+                e.target.value = value;
+            });
+        });
+
+        // Set current date for prescription date
+        const dataPrescricao = document.getElementById('data_prescricao');
+        if (dataPrescricao) {
+            const today = new Date();
+            const formattedDate = today.toISOString().split('T')[0];
+            dataPrescricao.value = formattedDate;
+        }
+
+        // Sample data for dropdowns (in a real app, this would come from an API)
+        const pacientes = [
+            { id: 1, nome: "João Silva", cpf: "123.456.789-09" },
+            { id: 2, nome: "Maria Oliveira", cpf: "987.654.321-00" },
+            { id: 3, nome: "Carlos Souza", cpf: "456.789.123-45" }
+        ];
+
+        const medicos = [
+            { id: 1, nome: "Dr. Roberto Almeida", especialidade: "Cardiologista", crm: "123456" },
+            { id: 2, nome: "Dra. Ana Santos", especialidade: "Pediatra", crm: "654321" },
+            { id: 3, nome: "Dr. Marcos Lima", especialidade: "Ortopedista", crm: "789012" }
+        ];
+
+        const consultas = [
+            { id: 1, medico: "Dr. Roberto Almeida", paciente: "João Silva", data: "2023-06-15T10:00" },
+            { id: 2, medico: "Dra. Ana Santos", paciente: "Maria Oliveira", data: "2023-06-16T14:30" },
+            { id: 3, medico: "Dr. Marcos Lima", paciente: "Carlos Souza", data: "2023-06-17T09:15" }
+        ];
+
+        // Populate dropdowns with sample data
+        function populateDropdowns() {
+            // Paciente dropdowns
+            const pacienteSelects = document.querySelectorAll('select[id*="paciente_select"]');
+            pacienteSelects.forEach(select => {
+                select.innerHTML = '<option value="" disabled selected>Selecione um paciente</option>';
+                pacientes.forEach(paciente => {
+                    const option = document.createElement('option');
+                    option.value = paciente.id;
+                    option.textContent = `${paciente.nome} (${paciente.cpf})`;
+                    select.appendChild(option);
+                });
+            });
+
+            // Médico dropdowns
+            const medicoSelects = document.querySelectorAll('select[id*="medico_select"]');
+            medicoSelects.forEach(select => {
+                select.innerHTML = '<option value="" disabled selected>Selecione um médico</option>';
+                medicos.forEach(medico => {
+                    const option = document.createElement('option');
+                    option.value = medico.id;
+                    option.textContent = `${medico.nome} - ${medico.especialidade} (CRM: ${medico.crm})`;
+                    select.appendChild(option);
+                });
+            });
+
+            // Consulta dropdown
+            const consultaSelect = document.getElementById('consulta_select');
+            if (consultaSelect) {
+                consultaSelect.innerHTML = '<option value="" disabled selected>Selecione uma consulta</option>';
+                consultas.forEach(consulta => {
+                    const option = document.createElement('option');
+                    option.value = consulta.id;
+                    option.textContent = `${consulta.paciente} com ${consulta.medico} em ${new Date(consulta.data).toLocaleString()}`;
+                    consultaSelect.appendChild(option);
+                });
+            }
+        }
+
+        // Initialize the page
+        document.addEventListener('DOMContentLoaded', () => {
+            populateDropdowns();
+            
+            // Form submissions (in a real app, these would send data to a server)
+            const forms = document.querySelectorAll('form');
+            forms.forEach(form => {
+                form.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    
+                    // Validate form
+                    let isValid = true;
+                    const inputs = this.querySelectorAll('input[required], select[required], textarea[required]');
+                    
+                    inputs.forEach(input => {
+                        const errorElement = document.getElementById(`${input.id}-error`);
+                        
+                        // Clear previous errors
+                        input.classList.remove('input-error');
+                        if (errorElement) errorElement.classList.add('hidden');
+                        
+                        // Check if empty
+                        if (!input.value.trim()) {
+                            isValid = false;
+                            input.classList.add('input-error');
+                            if (errorElement) {
+                                errorElement.textContent = 'Este campo é obrigatório';
+                                errorElement.classList.remove('hidden');
+                            }
+                            return;
+                        }
+                        
+                        // Field-specific validations
+                        if (input.id === 'cpf' && !validateCPF(input.value)) {
+                            isValid = false;
+                            input.classList.add('input-error');
+                            if (errorElement) {
+                                errorElement.textContent = 'CPF inválido';
+                                errorElement.classList.remove('hidden');
+                            }
+                        }
+                        
+                        if ((input.id === 'email' || input.id === 'medico_email') && !validateEmail(input.value)) {
+                            isValid = false;
+                            input.classList.add('input-error');
+                            if (errorElement) {
+                                errorElement.textContent = 'Email inválido';
+                                errorElement.classList.remove('hidden');
+                            }
+                        }
+                        
+                        if (input.id.includes('telefone') && !validatePhone(input.value)) {
+                            isValid = false;
+                            input.classList.add('input-error');
+                            if (errorElement) {
+                                errorElement.textContent = 'Telefone inválido';
+                                errorElement.classList.remove('hidden');
+                            }
+                        }
+                        
+                        if (input.id === 'crm' && !validateCRM(input.value)) {
+                            isValid = false;
+                            input.classList.add('input-error');
+                            if (errorElement) {
+                                errorElement.textContent = 'CRM deve conter de 4 a 6 dígitos';
+                                errorElement.classList.remove('hidden');
+                            }
+                        }
+                        
+                        if (input.id === 'data_nascimento') {
+                            const birthDate = new Date(input.value);
+                            const today = new Date();
+                            if (birthDate >= today) {
+                                isValid = false;
+                                input.classList.add('input-error');
+                                if (errorElement) {
+                                    errorElement.textContent = 'Data de nascimento deve ser no passado';
+                                    errorElement.classList.remove('hidden');
+                                }
+                            }
+                        }
+                        
+                        if (input.id === 'data_retorno') {
+                            const avaliacaoDate = new Date(document.getElementById('data_avaliacao').value);
+                            const retornoDate = new Date(input.value);
+                            if (retornoDate <= avaliacaoDate) {
+                                isValid = false;
+                                input.classList.add('input-error');
+                                if (errorElement) {
+                                    errorElement.textContent = 'Data de retorno deve ser após a data de avaliação';
+                                    errorElement.classList.remove('hidden');
+                                }
+                            }
+                        }
+                    });
+                    
+                    if (isValid) {
+                        // In a real app, you would send the form data to the server here
+                        alert('Formulário enviado com sucesso!');
+                        this.reset();
+                    }
+                });
+            });
+        });
+    </script>
+<p style="border-radius: 8px; text-align: center; font-size: 12px; color: #fff; margin-top: 16px;position: fixed; left: 8px; bottom: 8px; z-index: 10; background: rgba(0, 0, 0, 0.8); padding: 4px 8px;">Made with <img src="https://enzostvs-deepsite.hf.space/logo.svg" alt="DeepSite Logo" style="width: 16px; height: 16px; vertical-align: middle;display:inline-block;margin-right:3px;filter:brightness(0) invert(1);"><a href="https://enzostvs-deepsite.hf.space" style="color: #fff;text-decoration: underline;" target="_blank" >DeepSite</a> - 🧬 <a href="https://enzostvs-deepsite.hf.space?remix=caiio/cadastro" style="color: #fff;text-decoration: underline;" target="_blank" >Remix</a></p></body>
+</html>
