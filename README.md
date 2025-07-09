@@ -46,4 +46,4 @@ Estou empolgado em compartilhar a conclusão do **VittaMed**, uma API completa p
 
 1. Clone o repositório:
    ```bash
-   git clone https://github.com/caiomello42/vittamed.git
+   git clone https://github.com/caiomello42/vitta-med-api.git
